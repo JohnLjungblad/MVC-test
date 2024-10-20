@@ -1,0 +1,130 @@
+@model dynamic
+
+<div class="container">
+    <h2>Device Details</h2>
+    <div class="card">
+        <div class="card-body">
+            <form id="deviceForm">
+                <div class="form-group">
+                    <input type="hidden" id="idInput" value="@Model.Id" />
+
+                    <label><strong>Type:</strong></label>
+                    <p id="typeDisplay">@Model.Type</p>
+                    <input id="typeInput" type="text" class="form-control d-none" value="@Model.Type">
+                </div>
+
+                <div class="form-group">
+                    <label><strong>Name:</strong></label>
+                    <p id="nameDisplay">@Model.Name</p>
+                    <input id="nameInput" type="text" class="form-control d-none" value="@Model.Name">
+                </div>
+
+                <div class="form-group">
+                    <label><strong>Version:</strong></label>
+                    <p id="versionDisplay">@Model.Version</p>
+                    <input id="versionInput" type="text" class="form-control d-none" value="@Model.Version">
+                </div>
+
+                <div class="form-group">
+                    <label><strong>Owner:</strong></label>
+                    <p id="ownerDisplay">@Model.OwnerFullName</p>
+                    <input id="ownerInput" type="text" class="form-control d-none" value="@Model.OwnerFullName"
+                        disabled>
+                </div>
+
+                <div id="ownerSelect" class="form-group d-none">
+                    <label><strong>Select a new owner</strong></label>
+                    <select id="userDropdown" class="form-control">
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label><strong>Department:</strong></label>
+                    <p id="departmentDisplay">@Model.DepartmentName</p>
+                    <input id="departmentInput" type="text" class="form-control d-none" value="@Model.DepartmentName">
+                </div>
+
+                <button type="button" class="btn btn-primary mt-2" id="editButton">Edit device</button>
+
+                <button type="submit" class="btn btn-success mt-2 d-none" id="submitButton">Save changes</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+
+        $('#editButton').on('click', function () {
+            $('#typeDisplay, #nameDisplay, #versionDisplay, #ownerDisplay, #departmentDisplay').hide();
+            $('#typeInput, #nameInput, #versionInput, #ownerInput, #departmentInput, #ownerSelect').removeClass('d-none');
+
+            $('#editButton').hide();
+            $('#submitButton').removeClass('d-none');
+        });
+
+
+        $('#deviceForm').on('submit', function (e) {
+            e.preventDefault();
+
+            var updatedDevice = {
+                id: $('#idInput').val(),
+                type: $('#typeInput').val(),
+                name: $('#nameInput').val(),
+                version: $('#versionInput').val(),
+                userId: $('#userDropdown').val(),
+                departmentName: $('#departmentInput').val()
+            };
+
+            $.ajax({
+                url: '/Device/UpdateDevice',
+                type: 'POST',
+                data: updatedDevice,
+                success: function (response) {
+
+                    alert('Device updated successfully!');
+
+                    $('#typeDisplay').text($('#typeInput').val()).show();
+                    $('#nameDisplay').text($('#nameInput').val()).show();
+                    $('#versionDisplay').text($('#versionInput').val()).show();
+
+                    $('#ownerDisplay').text($('#userDropdown option:selected').text()).show();
+
+                    $('#departmentDisplay').text($('#departmentInput').val()).show();
+
+                    $('#typeInput, #nameInput, #versionInput, #ownerSelect, #departmentInput').addClass('d-none');
+                    $('#ownerInput').hide();
+
+                    $('#submitButton').addClass('d-none');
+                    $('#editButton').show();
+                },
+                error: function (error) {
+
+                    alert('Error updating device.');
+                }
+            });
+        });
+        $.ajax({
+            url: '@Url.Action("GetUsers", "Management")',  // Call the API
+            type: 'GET',
+            success: function (data) {
+                var dropdown = $('#userDropdown');
+                dropdown.empty();  // Clear existing options
+                dropdown.append('<option value="">Select a new owner</option>'); // Default option
+
+                // Iterate over the users and append options
+                $.each(data, function (i, user) {
+                    dropdown.append($('<option>', {
+                        value: user.userId,
+                        text: user.fullName
+                    }));
+                });
+            },
+            error: function (error) {
+                console.error("Error fetching users:", error);
+            }
+        });
+    });
+</script>

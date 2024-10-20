@@ -1,0 +1,77 @@
+﻿<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <form id="searchForm">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="searchInput" placeholder="Search for devices..."
+                        aria-label="Search">
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" type="submit">Search</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-8 offset-md-2">
+            <div id="searchResults"></div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#searchForm').on('submit', function (e) {
+            e.preventDefault(); // Prevent form from submitting normally
+
+            var searchPhrase = $('#searchInput').val();
+
+            $.ajax({
+                url: '/Search/SearchForDevice', // Replace 'YourControllerName' with the actual controller name
+                type: 'GET',
+                data: { searchPhrase: searchPhrase },
+                success: function (data) {
+                    console.log(data); // Check the structure of the returned data
+                    $('#searchResults').empty();
+
+                    if (data.length > 0) {
+                        var resultsHtml = '<ul class="list-group">';
+                        $.each(data, function (index, device) {
+                            resultsHtml += '<li class="list-group-item">';
+                            resultsHtml += '<div><strong>Type: </strong> ' + device.type + '</div>';
+                            resultsHtml += '<div><strong> Name: </strong> ' + device.name + '</div>';
+                            resultsHtml += '<div><strong> Version: </strong> ' + device.version + '</div>';
+                            resultsHtml += '<div><strong> Owner: </strong> ' + device.ownerInfo.fullName + '</div>';
+                            resultsHtml += '<div><strong> Department: </strong> ' + device.ownerInfo.departmentName + '</div>';
+
+
+                            resultsHtml += '<form action="/Device/DeviceDetails" method="POST">';
+                            resultsHtml += '<input type="hidden" name="id" value="' + device.deviceId + '">';
+                            resultsHtml += '<input type="hidden" name="type" value="' + device.type + '">';
+                            resultsHtml += '<input type="hidden" name="name" value="' + device.name + '">';
+                            resultsHtml += '<input type="hidden" name="version" value="' + device.version + '">';
+                            resultsHtml += '<input type="hidden" name="ownerFullName" value="' + device.ownerInfo.fullName + '">';
+                            resultsHtml += '<input type="hidden" name="departmentName" value="' + device.ownerInfo.departmentName + '">';
+                            resultsHtml += '<button type="submit" class="btn btn-primary mt-2">View Details</button>';
+                            resultsHtml += '</form>';
+
+                            resultsHtml += '</li>';
+                        });
+                        resultsHtml += '</ul>';
+                        $('#searchResults').html(resultsHtml);
+                    } else {
+                        $('#searchResults').html('<p class="text-muted">No devices found.</p>');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    // Handle errors
+                    $('#searchResults').html('<p class="text-danger">An error occurred. Please try again later.</p>');
+                }
+            });
+        });
+    });
+</script>

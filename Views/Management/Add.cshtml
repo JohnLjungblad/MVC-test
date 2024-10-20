@@ -1,0 +1,110 @@
+@model UserDeviceViewModel
+
+<div class="container">
+    <div class="row">
+
+        <div class="col-md-6">
+            <h2>Add Devices</h2>
+            <form asp-action="SubmitDevice" method="post">
+                <div class="form-group">
+                    <label asp-for="Device.UserId">Select User</label>
+                    <select asp-for="Device.UserId" class="form-control" id="userDropdown">
+                        <option value="">Select a user</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Device.Name">Device Name</label>
+                    <input asp-for="Device.Name" class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Device.Version">Device Version</label>
+                    <input asp-for="Device.Version" class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Device.Type">Device Type</label>
+                    <select asp-for="Device.Type" class="form-control">
+                        <option value="Mobile">Mobile</option>
+                        <option value="Computer">Computer</option>
+                        <option value="Tablet">Tablet</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-3">Add Device</button>
+            </form>
+        </div>
+
+        <div class="col-md-6">
+            <h2>Add Users</h2>
+            <form asp-action="SubmitUser" method="post">
+                <div class="form-group">
+                    <label asp-for="User.FullName">Full Name</label>
+                    <input asp-for="User.FullName" class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="User.DepartmentId">Department</label>
+                    <select asp-for="User.DepartmentId" class="form-control" id="departmentDropdown">
+                        <option value="">Select a department</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Add User</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        // Fetch users and populate the dropdown
+        $.ajax({
+            url: '@Url.Action("GetUsers", "Management")',  // Call the API
+            type: 'GET',
+            success: function (data) {
+                var dropdown = $('#userDropdown');
+                dropdown.empty();  // Clear existing options
+                dropdown.append('<option value="">Select a user</option>'); // Default option
+
+                // Iterate over the users and append options
+                $.each(data, function (i, user) {
+                    dropdown.append($('<option>', {
+                        value: user.userId,
+                        text: user.fullName
+                    }));
+                });
+            },
+            error: function (error) {
+                console.error("Error fetching users:", error);
+            }
+        });
+
+        // Fetch departments and populate the dropdown
+        $.ajax({
+            url: '@Url.Action("GetDepartments", "Management")',  // Call the API
+            type: 'GET',
+            success: function (data) {
+                var dropdown = $('#departmentDropdown');
+                dropdown.empty();  // Clear existing options
+                dropdown.append('<option value="">Select a department</option>'); // Default option
+
+                // Iterate over the departments and append options
+                $.each(data, function (i, department) {
+                    dropdown.append($('<option>', {
+                        value: department.departmentId,  // This binds to DepartmentId
+                        text: department.departmentName  // Display department name
+                    }));
+                });
+            },
+            error: function (error) {
+                console.error("Error fetching departments:", error);
+            }
+        });
+    });
+</script>
